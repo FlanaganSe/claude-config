@@ -1,3 +1,29 @@
-# Add these lines to your project's .gitignore:
+# Claude configuration
 .claude/plans/
 .claude/settings.local.json
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.wrangler/
+
+# Environment
+.env*
+.dev.vars
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Test
+test-results/
+playwright-report/
+playwright/.clerk/
+
+# Misc
+*.tsbuildinfo
