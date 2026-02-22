@@ -33,7 +33,12 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [".claude/hooks/block-dangerous-commands.sh"]
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-dangerous-commands.sh"
+          }
+        ]
       }
     ]
   },

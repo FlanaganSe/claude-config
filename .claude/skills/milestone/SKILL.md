@@ -12,7 +12,7 @@ Split into milestones. Each must be:
 
 Update `.claude/plans/plan.md` with a Milestones section:
 
-```
+===
 ## Milestones
 
 ### M1: [name]
@@ -22,7 +22,7 @@ Commit: "[type]: [description]"
 
 ### M2: [name]
 ...
-```
+===
 
 Then begin executing M1.
 
