@@ -1,0 +1,3 @@
+# Add these lines to your project's .gitignore:
+.claude/plans/
+.claude/settings.local.json
