@@ -8,14 +8,26 @@ if [ "$TOOL" = "Bash" ]; then
   CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
   if echo "$CMD" | grep -qE 'rm\s+-rf'; then
-    echo '{"decision": "block", "reason": "Use trash instead of rm -rf"}'
+    jq -n '{
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: "Use trash instead of rm -rf"
+      }
+    }'
     exit 0
   fi
 
   if echo "$CMD" | grep -qE 'git\s+push\s+.*(main|master)'; then
-    echo '{"decision": "block", "reason": "Push to a feature branch, not main"}'
+    jq -n '{
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: "Push to a feature branch, not main"
+      }
+    }'
     exit 0
   fi
 fi
 
-echo '{"decision": "allow"}'
+exit 0
