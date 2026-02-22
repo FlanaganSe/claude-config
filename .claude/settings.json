@@ -16,7 +16,8 @@
       "Edit",
       "Write",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(curl *)"
     ],
     "deny": [
       "Read(**/.env*)",
@@ -24,7 +25,6 @@
       "Bash(git push *)",
       "Bash(git reset --hard *)",
       "Bash(rm -rf *)",
-      "Bash(curl *)",
       "Bash(wget *)"
     ]
   },
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/block-dangerous-commands.sh"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-dangerous-commands.sh"
           }
         ]
       }
