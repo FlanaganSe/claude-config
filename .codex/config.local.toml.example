@@ -1,0 +1,15 @@
+# Personal override example. Copy desired values into ~/.codex/config.toml
+# or a profile in ~/.codex/config.toml rather than committing local edits.
+# If available on your plan, you can switch to:
+# model = "gpt-5.3-codex"
+
+model = "gpt-5.2-codex"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[sandbox_workspace_write]
+network_access = false
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false

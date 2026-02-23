@@ -1,0 +1,45 @@
+# Team defaults for this repository.
+# This file is applied when the project is marked trusted in Codex.
+model = "gpt-5.2-codex"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[sandbox_workspace_write]
+network_access = false
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 4
+
+[agents.researcher]
+description = "Read-only codebase and web research before planning."
+config_file = "agents/researcher.toml"
+
+[agents.reviewer]
+description = "Fresh-context bug-focused review after implementation."
+config_file = "agents/reviewer.toml"
+
+[agents.verifier]
+description = "Runs verification checks and reports failures without fixing."
+config_file = "agents/verifier.toml"
+
+[profiles.strict]
+approval_policy = "untrusted"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[profiles.readonly]
+approval_policy = "never"
+sandbox_mode = "read-only"
+web_search = "disabled"
+
+[profiles.full_auto]
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+web_search = "cached"

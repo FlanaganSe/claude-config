@@ -1,6 +1,8 @@
-# Claude configuration
-.claude/plans/
-.claude/settings.local.json
+# Codex workflow artifacts
+.plans/*.md
+
+# Optional local Codex overrides
+.codex/config.local.toml
 
 # Dependencies
 node_modules/

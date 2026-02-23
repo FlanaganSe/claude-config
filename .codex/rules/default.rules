@@ -1,0 +1,43 @@
+# Command gating rules for escalated/out-of-sandbox execution.
+
+prefix_rule(
+  pattern = ["rm", "-rf"],
+  decision = "forbidden",
+  justification = "Use safer deletion patterns to avoid data loss.",
+)
+
+prefix_rule(
+  pattern = ["git", "push"],
+  decision = "forbidden",
+  justification = "Push from your own shell after explicit review.",
+)
+
+prefix_rule(
+  pattern = ["git", "reset", "--hard"],
+  decision = "forbidden",
+  justification = "Hard reset is destructive and can remove uncommitted work.",
+)
+
+prefix_rule(
+  pattern = ["git", "add"],
+  decision = "prompt",
+  justification = "Staging changes should be explicit.",
+)
+
+prefix_rule(
+  pattern = ["git", "commit"],
+  decision = "prompt",
+  justification = "Committing should remain user-approved.",
+)
+
+prefix_rule(
+  pattern = ["curl"],
+  decision = "prompt",
+  justification = "Network downloads require explicit approval.",
+)
+
+prefix_rule(
+  pattern = ["wget"],
+  decision = "forbidden",
+  justification = "Use curl with explicit approval instead.",
+)

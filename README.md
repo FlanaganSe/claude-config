@@ -1,21 +1,22 @@
-# claude-config
+# codex-config
 
-A reusable Claude Code configuration template. Copy `.claude/` and `CLAUDE.md` into a new project to get a structured AI workflow out of the box.
+A reusable Codex configuration template. Copy `.codex/`, `.agents/`, and `AGENTS.md` into a project to get a structured workflow that mirrors the original Claude template in Codex-native format.
+Validated against official Codex docs and changelog guidance current as of February 2026.
 
 ---
 
 ## What this gives you
 
-A six-step workflow for building features with Claude:
+A six-step workflow for building features with Codex skills:
 
 ```
-/prd "description"   → writes .claude/plans/prd.md
-/research            → researcher agent investigates codebase
-/plan                → generates implementation plan
-  ↓ you review plan.md and approve
-/milestone           → splits plan, executes milestone by milestone
-/verify              → run tests via verifier agent
-/review              → fresh-context code review via reviewer agent
+$prd "description"   -> writes .plans/prd.md
+$research            -> researcher role investigates codebase
+$plan                -> generates implementation plan
+  -> you review plan.md and approve
+$milestone           -> splits plan, executes milestone by milestone
+$verify              -> runs checks via verifier role
+$review              -> fresh-context bug review via reviewer role
 ```
 
 Each step produces a file. The next step reads it. You control when to advance.
@@ -24,96 +25,91 @@ Each step produces a file. The next step reads it. You control when to advance.
 
 ## Directory structure
 
-```
-.claude/
-├── agents/
-│   ├── researcher.md    # Read-only investigation, writes research.md
-│   ├── reviewer.md      # Fresh-context code review after implementation
-│   └── verifier.md      # Runs tests and reports results, never fixes
-├── skills/
-│   ├── prd/             # /prd — generate product requirements doc
-│   ├── research/        # /research — trigger researcher agent
-│   ├── plan/            # /plan — generate implementation plan
-│   ├── milestone/       # /milestone — split plan and execute
-│   ├── verify/          # /verify — trigger verifier agent manually
-│   └── review/          # /review — trigger reviewer agent manually
+```text
+.codex/
+├── config.toml                 # Team defaults: sandbox, approvals, roles
 ├── rules/
-│   ├── immutable.md     # Non-negotiable rules (always loaded)
-│   ├── conventions.md   # Code style and established patterns
-│   └── stack.md         # Technology choices
-├── hooks/
-│   └── block-dangerous-commands.sh   # Blocks rm -rf, push to main
-├── plans/               # Ephemeral working artifacts (gitignored)
-├── settings.json        # Shared permissions and hooks
-└── settings.local.json  # Personal overrides (gitignored)
-CLAUDE.md                # Project instructions loaded every session
+│   └── default.rules           # Command safety rules for escalated execution
+└── agents/
+    ├── researcher.toml         # Read-mostly research role
+    ├── reviewer.toml           # Fresh-context reviewer role
+    └── verifier.toml           # Verification-only role
+.agents/
+├── skills/
+│   ├── prd/                    # $prd
+│   ├── research/               # $research
+│   ├── plan/                   # $plan
+│   ├── milestone/              # $milestone
+│   ├── verify/                 # $verify
+│   └── review/                 # $review
+├── rules/
+│   ├── immutable.md            # Non-negotiable rules
+│   ├── conventions.md          # Code style and patterns
+│   └── stack.md                # Technology choices
+.plans/
+└── *.md                        # Ephemeral PRD/research/plan artifacts (gitignored)
+AGENTS.md                       # Root instructions auto-loaded by Codex
 ```
 
 ---
 
-## Setting up a new project
+## Setup in a new project
 
-1. Copy `.claude/` and `CLAUDE.md` into your project root.
-2. Fill in `CLAUDE.md` — project name, commands, description.
-3. Fill in `.claude/rules/stack.md` — your actual runtime, database, test runner.
-4. Add real rules to `.claude/rules/immutable.md` as you discover them.
-5. Create `.gitignore` entries (or add to existing):
+1. Copy `.codex/`, `.agents/`, and `AGENTS.md` into the target repo.
+2. Fill in `AGENTS.md` with real project commands and description.
+3. Fill in `.agents/rules/stack.md` with actual runtime/framework/test tooling.
+4. Add real invariants to `.agents/rules/immutable.md`.
+5. Add these entries to `.gitignore`:
+   ```gitignore
+   .plans/*.md
+   .codex/config.local.toml
    ```
-   .claude/plans/*.md
-   .claude/settings.local.json
-   ```
+6. Trust the project in Codex so `.codex/config.toml` is applied.
 
 ---
 
 ## How the workflow runs
 
-**Planning phase** (you control each step):
+Planning phase:
+- `$prd "add user auth"` writes a concise PRD.
+- Optionally add external notes to `.plans/research.md`.
+- `$research` investigates and appends findings.
+- `$plan` generates a step-by-step implementation plan. Review before execution.
 
-- `/prd "add user auth"` — Claude writes a requirements doc. Read it, edit it if needed.
-- Optionally paste external research (Gemini, ChatGPT, docs) into `.claude/plans/research.md` first.
-- `/research` — researcher agent reads the PRD, investigates your codebase, appends findings.
-- `/plan` — Claude reads PRD + research, writes a step-by-step implementation plan. **Review this before proceeding.**
+Execution phase:
+- `$milestone` splits the plan into small milestones and executes sequentially.
+- After each milestone it runs checks, verifies, reviews, and then proceeds.
 
-**Execution phase** (Claude runs autonomously per milestone):
-
-- `/milestone` — Claude splits the plan into small committable milestones and starts executing. After each:
-  - Runs verification commands
-  - Spawns verifier agent for test confirmation
-  - Commits
-  - Spawns reviewer agent for bug check
-  - Fixes any critical issues before moving on
-
-**Between milestones:** run `/clear` to reset context. Auto memory preserves what matters; stale implementation details don't carry over.
+Between milestones, use `/clear` to reset context if needed.
 
 ---
 
-## Agents vs. skills
+## Critical translation notes
 
-**Agents** (`.claude/agents/`) are subprocesses Claude spawns via `Task(...)`. Each gets isolated context, specific tools, and a defined role. Researcher, reviewer, and verifier are agents because their outputs should not contaminate the main context window.
+What stayed near-identical:
+- Same PRD -> research -> plan -> milestone -> verify -> review flow.
+- Same three specialist roles (researcher, verifier, reviewer).
+- Same immutable/conventions/stack docs and plan artifacts model.
 
-**Skills** (`.claude/skills/`) are slash commands you invoke. Workflow skills (`/prd`, `/plan`, `/milestone`) have `disable-model-invocation: true` — Claude cannot trigger them automatically. You control when each phase begins.
+What changed for Codex best practice:
+- Claude hooks were replaced by `.codex/rules/*.rules` (Codex-native command gating).
+- Claude allow/ask/deny permission lists became `approval_policy` + sandbox mode + rules.
+- `CLAUDE.md` became root `AGENTS.md` (Codex instruction entry point).
+- Role definitions moved from markdown agent files to `.codex/agents/*.toml`.
+- Plan artifacts moved from `.agents/plans/` to `.plans/` because `.agents/` is protected read-only in Codex `workspace-write` sandbox.
+
+High-value small defaults added:
+- `web_search = "cached"` to keep web lookups deterministic and lower-cost by default.
+- `agents.max_threads = 4` to cap multi-agent concurrency and prevent noisy fan-out.
+- Ready-to-use security profiles: `strict`, `readonly`, and `full_auto`.
+
+What does not translate directly:
+- Per-tool path denylists like `Read(**/.env*)` are not a first-class Codex config primitive.
+  They are enforced here via AGENTS policy and should be backed by org-level safeguards.
 
 ---
 
-## Permissions
+## Local personal overrides
 
-`settings.json` sets conservative team defaults:
-
-| Tier | What's there |
-|---|---|
-| `allow` | Read, search, pnpm, git status/diff/log |
-| `ask` | Edit, Write, git add/commit |
-| `deny` | .env files, secrets dirs, git push, rm -rf, curl/wget |
-
-`settings.local.json` (gitignored) promotes Edit/Write/commit to `allow` for personal use. The hook also blocks `rm -rf` and pushes to main/master as a hard safety layer.
-
----
-
-## Model tiering
-
-| Agent | Model | Why |
-|---|---|---|
-| verifier | haiku | Runs commands and reports output — no deep reasoning needed |
-| researcher | sonnet | Needs solid reasoning for codebase analysis |
-| reviewer | sonnet | Needs solid reasoning for bug detection |
-| main agent | your subscription default | Full task orchestration |
+Use user config (`~/.codex/config.toml`) or profiles for personal defaults.  
+This template includes `.codex/config.local.toml.example` as a copy source; keep local overrides uncommitted.
