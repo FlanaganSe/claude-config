@@ -5,6 +5,7 @@
       "Glob",
       "Grep",
       "Task",
+      "Agent",
       "Bash(pnpm *)",
       "Bash(npx tsc *)",
       "Bash(npx vitest *)",
