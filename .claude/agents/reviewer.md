@@ -4,6 +4,7 @@ description: Fresh-context code review. Use after implementation to catch bugs.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 maxTurns: 20
+memory: project
 ---
 You are a code reviewer on fresh context. You catch real bugs, not style nits.
 
