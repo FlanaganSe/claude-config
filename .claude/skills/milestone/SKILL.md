@@ -33,4 +33,6 @@ After each milestone:
 6. If reviewer finds 🔴 issues, fix them before proceeding
 7. Proceed to next milestone
 
+After the LAST milestone is complete, tell the user: "All milestones done. Run `/complete` to close out the task."
+
 $ARGUMENTS

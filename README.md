@@ -1,12 +1,12 @@
 # claude-config
 
-A reusable Claude Code configuration template. Copy `.claude/` and `CLAUDE.md` into a new project to get a structured AI workflow out of the box.
+A reusable Claude Code configuration template. Scaffold into any project with `/init-new-proj`.
 
 ---
 
 ## What this gives you
 
-A six-step workflow for building features with Claude:
+A seven-step workflow for building features with Claude:
 
 ```
 /prd "description"   → writes .claude/plans/prd.md
@@ -16,6 +16,7 @@ A six-step workflow for building features with Claude:
 /milestone           → splits plan, executes milestone by milestone
 /verify              → run tests via verifier agent
 /review              → fresh-context code review via reviewer agent
+/complete            → promotes decisions to ADR, cleans up plan files
 ```
 
 Each step produces a file. The next step reads it. You control when to advance.
@@ -25,43 +26,51 @@ Each step produces a file. The next step reads it. You control when to advance.
 ## Directory structure
 
 ```
+CLAUDE.md                    # Thin hub (<35 lines). Loaded every session.
+CLAUDE.local.md              # Personal overrides (gitignored)
+.gitignore
+
 .claude/
 ├── agents/
-│   ├── researcher.md    # Read-only investigation, writes research.md
-│   ├── reviewer.md      # Fresh-context code review after implementation
-│   └── verifier.md      # Runs tests and reports results, never fixes
+│   ├── researcher.md        # Read-only investigation (memory: project)
+│   ├── reviewer.md          # Fresh-context code review (memory: project)
+│   └── verifier.md          # Runs tests, reports results, never fixes
 ├── skills/
-│   ├── prd/             # /prd — generate product requirements doc
-│   ├── research/        # /research — trigger researcher agent
-│   ├── plan/            # /plan — generate implementation plan
-│   ├── milestone/       # /milestone — split plan and execute
-│   ├── verify/          # /verify — trigger verifier agent manually
-│   └── review/          # /review — trigger reviewer agent manually
+│   ├── prd/                 # /prd — generate product requirements doc
+│   ├── research/            # /research — trigger researcher agent
+│   ├── plan/                # /plan — generate implementation plan
+│   ├── milestone/           # /milestone — split plan and execute
+│   ├── verify/              # /verify — trigger verifier agent
+│   ├── review/              # /review — trigger reviewer agent
+│   └── complete/            # /complete — close task, promote ADRs, cleanup
 ├── rules/
-│   ├── immutable.md     # Non-negotiable rules (always loaded)
-│   ├── conventions.md   # Code style and established patterns
-│   └── stack.md         # Technology choices
+│   ├── immutable.md         # Non-negotiable rules (always loaded)
+│   ├── conventions.md       # Code style and established patterns
+│   └── stack.md             # Technology choices
 ├── hooks/
-│   └── block-dangerous-commands.sh   # Blocks rm -rf, push to main
-├── plans/               # Ephemeral working artifacts (gitignored)
-├── settings.json        # Shared permissions and hooks
-└── settings.local.json  # Personal overrides (gitignored)
-CLAUDE.md                # Project instructions loaded every session
+│   ├── block-dangerous-commands.sh   # Blocks rm -rf, push to main
+│   └── auto-format.sh               # Auto-formats on every file edit
+├── plans/                   # Ephemeral working artifacts
+└── settings.json            # Shared permissions and hooks
+
+docs/
+├── SYSTEM.md                # Domain + architecture + constraints (curated)
+└── decisions.md             # Append-only ADR log
 ```
 
 ---
 
 ## Setting up a new project
 
-1. Copy `.claude/` and `CLAUDE.md` into your project root.
+From any directory, run `/init-new-proj [project-type]`. The global skill reads this template, adapts it for your stack, and writes all files.
+
+Or manually:
+
+1. Copy `.claude/`, `CLAUDE.md`, `docs/`, and `.gitignore` into your project root.
 2. Fill in `CLAUDE.md` — project name, commands, description.
 3. Fill in `.claude/rules/stack.md` — your actual runtime, database, test runner.
 4. Add real rules to `.claude/rules/immutable.md` as you discover them.
-5. Create `.gitignore` entries (or add to existing):
-   ```
-   .claude/plans/*.md
-   .claude/settings.local.json
-   ```
+5. Fill in `docs/SYSTEM.md` when you have real architecture to document.
 
 ---
 
@@ -69,29 +78,49 @@ CLAUDE.md                # Project instructions loaded every session
 
 **Planning phase** (you control each step):
 
-- `/prd "add user auth"` — Claude writes a requirements doc. Read it, edit it if needed.
-- Optionally paste external research (Gemini, ChatGPT, docs) into `.claude/plans/research.md` first.
-- `/research` — researcher agent reads the PRD, investigates your codebase, appends findings.
-- `/plan` — Claude reads PRD + research, writes a step-by-step implementation plan. **Review this before proceeding.**
+- `/prd "add user auth"` — Claude writes requirements. Read it, edit if needed.
+- Optionally paste external research into `.claude/plans/research.md` first.
+- `/research` — researcher agent investigates codebase, appends findings.
+- `/plan` — reads PRD + research, writes step-by-step plan. **Review before proceeding.**
 
 **Execution phase** (Claude runs autonomously per milestone):
 
-- `/milestone` — Claude splits the plan into small committable milestones and starts executing. After each:
-  - Runs verification commands
-  - Spawns verifier agent for test confirmation
+- `/milestone` — splits plan into small committable milestones and executes. After each:
+  - Runs verification commands via verifier agent
   - Commits
-  - Spawns reviewer agent for bug check
-  - Fixes any critical issues before moving on
+  - Runs code review via reviewer agent
+  - Fixes critical issues before moving on
 
-**Between milestones:** run `/clear` to reset context. Auto memory preserves what matters; stale implementation details don't carry over.
+**Completion phase:**
+
+- `/complete` — promotes any architectural decisions to `docs/decisions.md` as ADRs, deletes ephemeral plan files.
 
 ---
 
-## Agents vs. skills
+## What's global vs. project
 
-**Agents** (`.claude/agents/`) are subprocesses Claude spawns via `Task(...)`. Each gets isolated context, specific tools, and a defined role. Researcher, reviewer, and verifier are agents because their outputs should not contaminate the main context window.
+| Location | Scope | Contains |
+|----------|-------|----------|
+| `~/.claude/CLAUDE.md` | All projects | Personal code preferences, workflow habits |
+| `~/.claude/settings.json` | All projects | Credential denies, notification hooks, effort level |
+| `~/.claude/skills/` | All projects | `/init-new-proj`, `/product-overview`, `/doc-clean`, `/summary` |
+| `.claude/settings.json` | This project (team) | Permission tiers, project hooks, env vars |
+| `.claude/rules/` | This project (team) | Conventions, stack, invariants |
+| `.claude/agents/` | This project (team) | Researcher, reviewer, verifier (with project memory) |
+| `.claude/skills/` | This project (team) | Workflow pipeline skills |
+| `CLAUDE.local.md` | This project (you) | Personal overrides, gitignored |
 
-**Skills** (`.claude/skills/`) are slash commands you invoke. Workflow skills (`/prd`, `/plan`, `/milestone`) have `disable-model-invocation: true` — Claude cannot trigger them automatically. You control when each phase begins.
+---
+
+## Agents
+
+| Agent | Model | Memory | Purpose |
+|-------|-------|--------|---------|
+| researcher | sonnet | project | Codebase + web research before planning |
+| reviewer | sonnet | project | Bug detection after implementation |
+| verifier | haiku | — | Run checks, report pass/fail |
+
+Researcher and reviewer accumulate project knowledge across sessions via `memory: project`.
 
 ---
 
@@ -101,19 +130,17 @@ CLAUDE.md                # Project instructions loaded every session
 
 | Tier | What's there |
 |---|---|
-| `allow` | Read, search, pnpm, git status/diff/log |
-| `ask` | Edit, Write, git add/commit |
-| `deny` | .env files, secrets dirs, git push, rm -rf, curl/wget |
+| `allow` | Read, search, pnpm/npx, git status/diff/log, common CLI tools |
+| `ask` | Edit, Write, git add/commit, curl |
+| `deny` | .env files, secrets dirs, git push, rm -rf, wget |
 
-`settings.local.json` (gitignored) promotes Edit/Write/commit to `allow` for personal use. The hook also blocks `rm -rf` and pushes to main/master as a hard safety layer.
+Global `~/.claude/settings.json` adds credential protection (deny reads to `~/.ssh`, `~/.aws`, `~/.kube`, etc.).
 
 ---
 
-## Model tiering
+## Hooks
 
-| Agent | Model | Why |
-|---|---|---|
-| verifier | haiku | Runs commands and reports output — no deep reasoning needed |
-| researcher | sonnet | Needs solid reasoning for codebase analysis |
-| reviewer | sonnet | Needs solid reasoning for bug detection |
-| main agent | your subscription default | Full task orchestration |
+| Hook | Event | What it does |
+|------|-------|-------------|
+| `block-dangerous-commands.sh` | PreToolUse (Bash) | Blocks `rm -rf` and push to main/master |
+| `auto-format.sh` | PostToolUse (Edit/Write) | Auto-detects and runs project formatter |
