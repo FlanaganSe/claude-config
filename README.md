@@ -118,7 +118,7 @@ Or manually:
 |-------|-------|--------|---------|
 | researcher | sonnet | project | Codebase + web research before planning |
 | reviewer | sonnet | project | Bug detection after implementation |
-| verifier | haiku | — | Run checks, report pass/fail |
+| verifier | sonnet | — | Run checks, report pass/fail |
 
 Researcher and reviewer accumulate project knowledge across sessions via `memory: project`.
 
