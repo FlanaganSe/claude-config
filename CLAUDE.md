@@ -26,7 +26,7 @@ See `docs/decisions.md` — append-only ADR log. Read during planning, not loade
 Create `CLAUDE.local.md` (gitignored) for personal, project-specific preferences.
 
 ## Workflow
-`/prd` → `/research` → `/plan` → `/milestone` → `/verify` + `/review` → `/complete`
+`/prd` → `/research` → `/plan` → `/milestone` (repeat) → `/complete`
 
 ## Escalation Policy
 - If a test or typecheck fails 3 times after attempted fixes, STOP and report what you've tried.

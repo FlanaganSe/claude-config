@@ -1,38 +1,61 @@
 ---
 name: milestone
-description: Splits approved plan into milestones and begins execution. Use after plan is reviewed and approved.
+description: Details and executes the next milestone from the plan. Run once per milestone.
 disable-model-invocation: true
 ---
-Read the approved plan at `.claude/plans/plan.md`.
+Read `.claude/plans/plan.md`. Find the next incomplete milestone (first unchecked `- [ ]` in the outline).
 
-Split into milestones. Each must be:
-- **Independently verifiable** — concrete "done" check
-- **Committable** — codebase is valid after each
-- **Small** — 1-5 steps per milestone
+If all milestones are checked: "All milestones complete. Run `/complete` to close out."
 
-Update `.claude/plans/plan.md` with a Milestones section:
+Otherwise:
 
-## Milestones
+## 1. Detail the milestone
 
-### M1: [name]
-- [ ] Step 1 — [desc] → verify: [command]
-- [ ] Step 2 — [desc] → verify: [command]
-Commit: "[type]: [description]"
+Read the source files relevant to this milestone to understand **current** code state.
+Read any `.claude/plans/research*.md` files relevant to this milestone's domain.
+If uncertain about the approach, use the researcher subagent to investigate before coding.
 
-### M2: [name]
-...
+Add detailed steps under this milestone in the outline:
 
-Then begin executing M1.
+```
+- [ ] M2: Build API endpoints — expose data layer via REST
+  - [ ] Step 1 — [desc] → verify: [command]
+  - [ ] Step 2 — [desc] → verify: [command]
+  Commit: "[type]: [description]"
+```
 
-After each milestone:
-1. Check off completed steps in plan.md
-2. Run verification commands
-3. Use the verifier subagent to confirm all checks pass
-4. Commit with the specified message
-5. Use the reviewer subagent to review the milestone's changes
-6. If reviewer finds 🔴 issues, fix them before proceeding
-7. Proceed to next milestone
+1-5 steps. Ground them in the actual code, not assumptions from planning time.
 
-After the LAST milestone is complete, tell the user: "All milestones done. Run `/complete` to close out the task."
+## 2. Implement
+
+Execute each step. Run its verify command after each step. Check off completed steps.
+
+**If any verification fails: stop, report the failure, and wait for human direction.**
+Do not silently retry more than once.
+
+## 3. Verify the milestone
+
+Use the verifier subagent to confirm all checks pass.
+**If the verifier reports failures: stop and report. Do not proceed.**
+
+## 4. Commit
+
+Commit with the message specified in the milestone.
+
+## 5. Review
+
+Use the reviewer subagent to review the milestone's changes.
+If reviewer finds 🔴 issues: fix them, re-verify, and amend the commit.
+
+## 6. Update and stop
+
+Check off this milestone in the outline (`- [x]`).
+
+Report:
+- What was completed
+- What's next
+- Any **manual tasks** the user needs to do before the next milestone (e.g., "Set up Clerk project and add keys to .env", "Deploy database migration"). Check the plan's manual setup tasks section.
+
+**Stop. The user decides when to run `/milestone` again.**
 
 $ARGUMENTS
