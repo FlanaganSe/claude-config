@@ -1,8 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Edit(*.md)",
-      "Write(*.md)"
+      "Edit(**/*.md)",
+      "Read(**/*.md)"
     ],
     "ask": [
       "Edit",
@@ -20,30 +20,6 @@
       "Bash(rm -rf *)",
       "Bash(wget *)",
       "Bash(find * -delete *)"
-    ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-dangerous-commands.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/auto-format.sh"
-          }
-        ]
-      }
     ]
   },
   "env": {
