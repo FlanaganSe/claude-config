@@ -15,10 +15,6 @@ pnpm ci               # Full CI: typecheck, lint, test
 @.claude/rules/conventions.md
 @.claude/rules/stack.md
 
-## System
-<!-- Uncomment when SYSTEM.md has real content: -->
-<!-- @docs/SYSTEM.md -->
-
 ## Decisions
 See `docs/decisions.md` — append-only ADR log. Read during planning, not loaded every session.
 

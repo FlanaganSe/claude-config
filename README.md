@@ -54,7 +54,6 @@ CLAUDE.local.md              # Personal overrides (gitignored)
 └── settings.json            # Shared permissions and hooks
 
 docs/
-├── SYSTEM.md                # Domain + architecture + constraints (curated)
 └── decisions.md             # Append-only ADR log
 ```
 
@@ -70,8 +69,6 @@ Or manually:
 2. Fill in `CLAUDE.md` — project name, commands, description.
 3. Fill in `.claude/rules/stack.md` — your actual runtime, database, test runner.
 4. Add real rules to `.claude/rules/immutable.md` as you discover them.
-5. Fill in `docs/SYSTEM.md` when you have real architecture to document.
-
 ---
 
 ## How the workflow runs
@@ -196,8 +193,6 @@ This scaffolds everything — CLAUDE.md, .claude/, docs/, .gitignore — adapted
 
 6. As invariants emerge ("never access the DB directly from route handlers"), add them to `.claude/rules/immutable.md`. They'll load in every future session.
 
-7. Once your architecture has real shape, fill in `docs/SYSTEM.md` and uncomment `@docs/SYSTEM.md` in CLAUDE.md so it loads every session.
-
 ---
 
 ### 2. Existing project without this configuration (brownfield adoption)
@@ -225,9 +220,7 @@ The skill detects existing files and asks before overwriting anything. It adapts
    - `conventions.md` — you know your patterns
    - `immutable.md` — you know your invariants ("never mutate state in reducers", "all API responses go through the serializer")
 
-3. **Generate a system doc.** Run `/product-overview` — it reads your entire codebase and writes a comprehensive overview to `docs/product-overview.md`. Use this to bootstrap `docs/SYSTEM.md` by extracting the architecture and constraints sections.
-
-4. **Use the workflow for your next feature.** Don't try to retroactively document everything. Start using `/prd` → `/plan` → `/milestone` → `/complete` on your next task. The researcher agent will learn the codebase organically, and its project memory accumulates across sessions.
+3. **Use the workflow for your next feature.** Don't try to retroactively document everything. Start using `/prd` → `/plan` → `/milestone` → `/complete` on your next task. The researcher agent will learn the codebase organically, and its project memory accumulates across sessions.
 
 ---
 
@@ -310,7 +303,6 @@ You have a project with some Claude Code setup (maybe a CLAUDE.md, maybe some cu
    - **CLAUDE.md** — Take the new template structure (thin hub, rules refs, workflow line, escalation policy). Move any project-specific instructions from your old CLAUDE.md into the appropriate location:
      - Build commands → CLAUDE.md Commands section
      - Code style rules → `.claude/rules/conventions.md`
-     - Architecture notes → `docs/SYSTEM.md`
      - Technology choices → `.claude/rules/stack.md`
      - Hard rules/invariants → `.claude/rules/immutable.md`
    - **settings.json** — Merge your existing permissions with the template. Keep your project-specific allow/deny rules. Add the hooks (PreToolUse for safety, PostToolUse for auto-format).
@@ -322,4 +314,4 @@ You have a project with some Claude Code setup (maybe a CLAUDE.md, maybe some cu
    - `/prd` → `/plan` → `/milestone` for the next substantial feature
    - `/complete` to keep plans from accumulating
 
-5. **Fill in SYSTEM.md.** Run `/product-overview` to generate a comprehensive overview, then curate the architecture and constraints into `docs/SYSTEM.md`. Uncomment `@docs/SYSTEM.md` in CLAUDE.md once it has real content.
+5. **Generate an overview.** Run `/product-overview` to generate a comprehensive codebase overview to `docs/product-overview.md`.
